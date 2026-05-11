@@ -1,0 +1,171 @@
+```html
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana Pautan WhatsApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        .dark-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+        }
+        .accent-gradient {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        }
+        .input-dark {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: #f1f5f9;
+        }
+        .input-dark:focus {
+            border-color: #25D366;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full dark-card rounded-3xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="accent-gradient p-8 text-white text-center">
+            <div class="inline-block p-3 bg-white/20 rounded-2xl mb-4">
+                <i class="fab fa-whatsapp text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold">WhatsApp Link Generator</h1>
+            <p class="text-white/80 text-sm mt-2">Tukarkan nombor telefon kepada pautan mudah kongsi</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="p-6 space-y-6">
+            <!-- Input Nombor -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">Nombor Telefon</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 font-medium border-r border-slate-700 pr-2 my-2">
+                        +60
+                    </span>
+                    <input type="tel" id="phoneInput" placeholder="123456789" 
+                        class="w-full pl-16 pr-4 py-3 input-dark rounded-xl transition-all"
+                    >
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">*Masukkan nombor tanpa kod negara (+60)</p>
+            </div>
+
+            <!-- Input Mesej (Optional) -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">Mesej (Pilihan)</label>
+                <textarea id="messageInput" rows="3" placeholder="Contoh: Hai, saya berminat dengan produk anda..." 
+                    class="w-full px-4 py-3 input-dark rounded-xl transition-all resize-none"></textarea>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="generateLink()" class="w-full accent-gradient text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] transition-all">
+                Jana Pautan
+            </button>
+
+            <!-- Result Section -->
+            <div id="resultArea" class="hidden space-y-4 pt-4 border-t border-slate-700">
+                <!-- Visual Confirmation -->
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    Pautan untuk: <span id="visualPhone" class="text-white"></span>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 break-all relative">
+                    <p id="generatedUrl" class="text-sm text-slate-300 font-mono"></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="copyToClipboard()" class="flex items-center justify-center gap-2 bg-slate-700 text-white py-3 rounded-xl hover:bg-slate-600 transition-colors">
+                        <i class="far fa-copy"></i> Salin
+                    </button>
+                    <a id="openButton" target="_blank" class="flex items-center justify-center gap-2 bg-green-900/30 text-green-400 py-3 rounded-xl font-semibold border border-green-800/30 hover:bg-green-900/50 transition-colors">
+                        <i class="fas fa-external-link-alt"></i> Buka
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 bg-slate-900/50 text-center border-t border-slate-700">
+            <p class="text-xs text-slate-500">© 2024 WhatsApp Link Tools. Tidak bersekutu dengan WhatsApp Inc.</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-100 text-slate-900 px-6 py-3 rounded-full text-sm shadow-2xl opacity-0 transition-opacity pointer-events-none font-bold">
+        Pautan berjaya disalin!
+    </div>
+
+    <script>
+        function generateLink() {
+            let inputVal = document.getElementById('phoneInput').value.trim();
+            const message = document.getElementById('messageInput').value;
+            const resultArea = document.getElementById('resultArea');
+            const generatedUrl = document.getElementById('generatedUrl');
+            const openButton = document.getElementById('openButton');
+            const visualPhone = document.getElementById('visualPhone');
+
+            if (!inputVal) {
+                showToast("Sila masukkan nombor telefon!");
+                return;
+            }
+
+            // Pembersihan Pintar
+            let cleanPhone = inputVal.replace(/[\s\-\(\)\+]/g, '');
+
+            if (cleanPhone.startsWith('60')) {
+                cleanPhone = cleanPhone.substring(2);
+            } 
+            else if (cleanPhone.startsWith('0')) {
+                cleanPhone = cleanPhone.substring(1);
+            }
+
+            const fullPhone = "60" + cleanPhone;
+            const baseUrl = "https://wa.me/" + fullPhone;
+            const encodedMsg = encodeURIComponent(message);
+            const finalUrl = message ? `${baseUrl}?text=${encodedMsg}` : baseUrl;
+
+            // Paparkan nombor untuk pengesahan visual
+            visualPhone.innerText = "+" + fullPhone;
+            generatedUrl.innerText = finalUrl;
+            openButton.href = finalUrl;
+            
+            resultArea.classList.remove('hidden');
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('generatedUrl').innerText;
+            const tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            
+            showToast("Pautan disalin ke clipboard!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+```
